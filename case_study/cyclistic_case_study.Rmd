@@ -1,0 +1,671 @@
+---
+title: "Data Analytics Case Study - R Programming"
+author: "M Adi Setiawan"
+date: "2023-08-19"
+output: 
+  cleanrmd::html_document_clean:
+    theme: water-dark
+    mathjax: default
+    use_fontawesome: true
+---
+```{r install cleanrmd (to use water-dark theme),include=FALSE,echo=FALSE}
+remotes::install_github("gadenbuie/cleanrmd", force = TRUE)
+cleanrmd::use_cleanrmd(name = "water-dark")
+```
+
+``` {css chunk style, echo=FALSE}
+.neon-bar {
+  background-color: #24293E;
+  border: 1px solid #9336B4 ;
+  color : white;
+}
+```
+
+```{r embedding neon bar theme for all chunk in this code, include=FALSE}
+knitr::opts_chunk$set(class.source = "neon-bar")
+knitr::knit_hooks$set(crop = knitr::hook_pdfcrop)
+```
+
+
+# Cyclistic Case Study - Google Data Analytics Course
+
+## Introduction
+
+Hello i'm Adi, i've been enrolled on Google Data Analytics Course, for completing my
+course i should working on a case study.
+
+Through this article, i will share step by step how to provide some
+insight to answer business problem through data decision making (known
+as business analyst approched)
+
+Before we start, i should tell you this time may be come toughtfull &
+stressfull time but it was perfect way to learn and develop our skills
+as much. Thanks Joe Yong for inspiration and insight through his article that posted at medium.
+
+## Scenario
+
+You are a junior data analyst working in the marketing analyst team at
+Cyclistic, a bike-sharing company from chicago that established on 2016.
+
+Moreno (director of marketing) believes the company's future success
+depends on maximizing the number of annual memberships.
+
+Our goal is to design marketing strategies aimed at converting casual
+riders into annual members. In order to do that, we need to understand
+how casual riders and annual members use Cyclistic bikes differently.
+
+## About the company
+
+Until now, Cyclistic's marketing strategy relied on building general
+awareness and appealing to broad consumer segments. One approach that
+helped make these things possible was the flexibility of its pricing
+plans: single-ride passes, full-day passes, and annual memberships.
+Customers who purchase single-ride or full-day passes are referred to as
+casual riders. Customers who purchase annual memberships are Cyclistic
+members.
+
+Cyclistic's finance analysts have concluded that annual members are much
+more profitable than casual riders. Although the pricing flexibility
+helps Cyclistic attract more customers, Moreno believes that maximizing
+the number of annual members will be key to future growth. Rather than
+creating a marketing campaign that targets all-new customers, Moreno
+believes there is a very good chance to convert casual riders into
+members. She notes that casual riders are already aware of the Cyclistic
+program and have chosen Cyclistic for their mobility needs.
+
+Moreno has set a clear goal: Design marketing strategies aimed at
+converting casual riders into annual members. In order to do that,
+however, the marketing analyst team needs to better understand how
+annual members and casual riders differ, why casual riders would buy a
+membership, and how digital media could affect their marketing tactics.
+Moreno and her team are interested in analyzing the Cyclistic historical
+bike trip data to identify trends.
+
+## Step by step Data Analytics Process
+### 1. Ask
+
+These are the questions/business task that would guide the future of the
+marketing program:
+
+```         
+1. To understand how annual members and casual riders use our Cyclistic bikes differently
+2. Why would casual members upgrade to annual memberships
+3. How can Cyclistic use digital media to influence casual riders to become members?
+```
+
+### 2. Prepare
+
+We will use Cyclistics historical trip
+data from January 2022 untill July 2023 - just click this link to
+download the data :
+[link](https://divvy-tripdata.s3.amazonaws.com/index.html)
+
+once get that data, we wiil stored that data on database, in this case
+we will used Dbeaver as Database. if you have'nt Dbevear, you can
+download through this [link](https://dbeaver.io/download/) and install
+them.
+
+Download the data and extract the zip then renaming file, this step will improve readablity for your team members and ease importing to database. Below how to work in this step :
+
+#### a. Renaming file
+
+```
+(202101-divvy-tripdata.csv) -> (cyclistic_2022_01.csv)
+(202102-divvy_tripdata.csv) -> (cyclistic_2022_02.csv)
+and so on ................
+(202102-divvy_tripdata.csv) -> (cyclistic_2023_07.csv)
+```
+
+#### b. Create database on DBeaver
+
+if you haven't a database, just created it, you can follow steps through
+this
+[link](https://lter.github.io/LTER-core-metabase/dbeaver.html#:~:text=Make%20a%20new%20database%3A%20right,see%20the%20schemas%20and%20tables.)
+:
+
+once we have a database, we can import cyclistic data on database
+through just right click on table icon in database tab then import as
+csv file, more detail explained by picture below :
+
+1.  Right click on tables tab in database then import data :
+
+<center>
+
+![](/Users/960169/Library/CloudStorage/OneDrive-PT.TelekomunikasiIndonesia/DATA%20SCIENCE/DATA%20ANALYTIC%20-%20GCC%20X%20TELKOM/CASE_STUDY/picture/Screen%20Shot%202023-08-19%20at%2017.07.23.png){width="250px"}
+
+</center>
+  
+2.  Select with CSV, then click Next.
+
+3.  For Input files, in the Source column, click none to open a file browser.
+
+4.  Browse CSV file that will be uploaded and click Open.
+
+5.  Click Next and preview the data if desired.
+
+6.  Click Next, Next, and Finish.
+
+7.  Open the table (or refresh the window if the table was already open) to see the data.
+
+> do this step until you adding all cyclistic data
+
+when you done import all file, congrats we just have a database & we just finished prepare step :
+
+<center>
+
+![](/Users/960169/Library/CloudStorage/OneDrive-PT.TelekomunikasiIndonesia/DATA%20SCIENCE/DATA%20ANALYTIC%20-%20GCC%20X%20TELKOM/CASE_STUDY/picture/dbevear_database.png){height="450px"}
+
+</center>
+
+> As a disclaimer, the data has been made available by Motivate International Inc. under this [license](https://ride.divvybikes.com/data-license-agreement)
+
+#### c. Load Data
+
+Data would be processed over 8,825,826 total records, spreadsheets
+wouldn't be able to handle the sheer amount of data. In this case, we
+would be using Rstudio.
+
+##### c.1 installing packages & load library :
+
+```         
+*install packages
+install.packages('tidyverse', repos="http://cran.us.r-project.org") # used for data manipulation 
+install.packages("janitor", repos="http://cran.us.r-project.org") # used for data cleaning 
+install.packages("lubridate", repos="http://cran.us.r-project.org") # used for date handling 
+install.packages("skimr", repos="http://cran.us.r-project.org") # used for summarizing data 
+install.packages("DBI", repos="http://cran.us.r-project.org") # used for defines interface for communication between R and RDBMS 
+install.packages("RMySQL", repos="http://cran.us.r-project.org") # an MySQL driver 
+install.packages("ggplot2", repos="http://cran.us.r-project.org") # used for vizualize data 
+install.packages("scales", repos="http://cran.us.r-project.org") # used for determining breaks and labels for axes and legends of chart
+install.packages("devtools",  repos="http://cran.us.r-project.org")
+devtools::install_github("nsgrantham/ggdark") # used for making dark theme at chart
+
+*load library 
+library (tidyr)
+library (janitor)
+library (lubridate)
+library(skimr)
+library(dplyr)
+library (DBI)
+library (RMySQL)
+library (ggplot2)
+library (scales)
+library(ggdark)
+```
+
+```{r install & load packges, include=FALSE, warning = FALSE}
+# install packages
+install.packages('tidyverse', repos="http://cran.us.r-project.org")
+install.packages("janitor", repos="http://cran.us.r-project.org")
+install.packages("lubridate", repos="http://cran.us.r-project.org")
+install.packages("skimr", repos="http://cran.us.r-project.org")
+install.packages("DBI", repos="http://cran.us.r-project.org")
+install.packages("RMySQL", repos="http://cran.us.r-project.org")
+install.packages("ggplot2", repos="http://cran.us.r-project.org")
+install.packages("scales", repos="http://cran.us.r-project.org")
+install.packages("devtools",  repos="http://cran.us.r-project.org")
+devtools::install_github("nsgrantham/ggdark")
+
+# load library
+library (tidyr)
+library (janitor)
+library (lubridate)
+library(skimr)
+library(dplyr)
+library (DBI)
+library (RMySQL)
+library (ggplot2)
+library (scales)
+library(ggdark)
+```
+
+##### c.2 Load data from database, using this syntax :
+
+###### c.2.1 Make a connection to DBMS
+
+```         
+mysqlconn <- dbConnect(MySQL(), 
+                       user = '*user_name*', password = '*user_password*',
+                       dbname = '*database_name*', host = '*user_host*')
+```
+
+*( we use DBI Library from DBI packages)*
+
+###### c.2.2 Load table as raw data
+
+```         
+raw_data <- dbReadTable(mysqlconn, "cyclistic")
+```
+
+*( we use DBI Library from DBI packages) -- (cyclistic is name of database table in my dbeaver)*
+
+
+```{r : load data, include=FALSE, warning=FALSE}
+
+# create a connection to database
+
+mysqlconn <- dbConnect(MySQL(), 
+                       user = 'root', password = 'rootpass',
+                       dbname = 'DB_TELKOM', host = 'localhost')
+
+# dbListTables(mysqlconn) # to show all tables in database
+
+# increasing the MAX_EXECUTION_TIME should work as well. to avoid error while fetching rows
+DBI::dbSendQuery(mysqlconn, "SET SESSION WAIT_TIMEOUT=999999999")
+DBI::dbSendQuery(mysqlconn, "SET SESSION MAX_EXECUTION_TIME=999999999")
+
+
+
+raw_data_2022 <- dbReadTable(mysqlconn, "cyclistic_2022")
+raw_data_2023 <- dbReadTable(mysqlconn, "cyclistic_2023")
+
+#bind the data (gabungkan data berdasarkan row)
+raw_data <- bind_rows(raw_data_2022,raw_data_2023)
+
+# this function used to clearing all chunks in database connections
+# ended connection to database
+dbListResults(mysqlconn) 
+dbDisconnect(mysqlconn)
+
+# alternative syntax for read table from database
+# dplyr::tbl(mysqlconn, "cyclistic") %>% collect(n = Inf)
+# dbGetQuery(mysqlconn, "SELECT * FROM cyclistic_2022")
+
+# raw_data <- tbl(mysqlconn, "cyclistic")
+# collect(raw_data, n = Inf)
+```
+
+### 3. Data Transformed
+
+we just have a raw data,inspect data type of each column. we can use some functions such as skim_without_chart (skimr), str (base) or glimpse (dplyr). in this case, i preferably using str () function.
+
+```         
+str(raw_data)
+```
+
+We would get the following:
+
+<center>
+
+![](/Users/960169/Library/CloudStorage/OneDrive-PT.TelekomunikasiIndonesia/DATA SCIENCE/DATA ANALYTIC - GCC X TELKOM/CASE_STUDY/picture/1. str_raw_data.png){width="700px"}
+
+</center>
+
+as you can see, we have a date time values but stored as chr. So, convert it as a date time type format :
+
+```{r converting data type, include = TRUE, results='hide'}
+
+# date & time handling -> changing data type -> using lubridate
+
+raw_data$ended_at <- ymd_hms(raw_data$ended_at)
+
+raw_data$started_at <- ymd_hms (raw_data$started_at)
+
+str (raw_data)
+```
+
+here's the result :
+
+<center>
+
+![](/Users/960169/Library/CloudStorage/OneDrive-PT.TelekomunikasiIndonesia/DATA SCIENCE/DATA ANALYTIC - GCC X TELKOM/CASE_STUDY/picture/2. str_raw_data (tranformed).png){width="700px"}
+
+</center>
+
+Now, datasets have identical column names & formatting types. We also should be checking if there are any wrongly formatted data types, such as :
+
+* Columns that contain characters are formatted as num/int
+* Columns that contain numbers/decimals but are formatted as chr
+* Columns that contain dates/time but is formatted as num/int
+
+### 4. Data Cleaning
+
+After that, clean column names to remove spaces, parentheses, and so on. then store data as clean_data
+
+```{r data cleaning, include=TRUE, results='hide'}
+
+# removing any spaces, parentheses, etc.
+raw_data <- clean_names(raw_data)
+
+# removing empty rows and stored it as clean_data
+clean_data <- janitor::remove_empty(raw_data, which = c())
+
+```
+
+### 5. Handle NA or Missing Values
+
+Missing Values / NA data can bias the results of analysis, so keep in eye NA values in data. there is so may way to deal with this problem. such as :
+
+* re ask to data owner
+* filling na value with valid external source
+* Deleting Rows with missing values
+* Impute missing values for continuous variable
+* Impute missing values for categorical variable
+* Prediction of missing values
+
+in this case, we not removing or put some works on rows with missing values.
+
+```{r checking NA Values rows, include=TRUE} 
+
+#check column with NA value
+names(which(colSums(is.na(clean_data)) > 0))
+
+```
+
+```{r NA Values Handling, include=FALSE} 
+# in the further, if we find some NA values, we can use this syntax
+
+#raw_data$start_station_id <- replace (raw_data$start_station_id, raw_data$start_station_id == "", NA)
+#raw_data$end_station_id <- replace (raw_data$end_station_id, raw_data$end_station_id == "", NA)
+
+# assigning new data frame (clean_data) as results removing rows with missing values
+# in our data, this column contain NA values : start_station_id,end_station_id,
+# in this case, we just remove NA values from 2 columns, start_station_id,end_station_id.
+
+# clean_data <- raw_data %>% filter(!is.na(start_station_id)) %>% filter(!is.na(end_station_id)) 
+
+```
+
+### 6. Data Manipulation
+
+Now we have clean_data, that contain 13 column, we still need some column to do analyze. the additional column can be obtained by do some works from existing column. in this case we add : 
+
+* trip_duration : using difftime
+* day_of_week : using wday()
+* month_trip : using month()
+* start_hour : using hour()
+
+```{r cleaning & transforming data, include=TRUE, results='hide'}
+
+# create trip_duration column
+clean_data <- clean_data %>% mutate (trip_duration = difftime(clean_data$ended_at, clean_data$started_at, unit = 'secs'))
+
+# create day_of_week column
+clean_data <- clean_data %>% mutate(day_of_week = wday(clean_data$started_at, week_start = 1, label = TRUE))
+
+# create month_trip column
+clean_data <- clean_data %>% mutate(month_trip = format.POSIXct(started_at,format = "%Y-%m"))
+
+# create start_hour column
+clean_data <- clean_data %>% mutate(start_hour = hour(started_at))
+
+# sort data by trip_duration and started_at column
+clean_data <- arrange(clean_data, trip_duration, desc(started_at))
+
+```
+
+### 7. Final Check
+
+Before we do some analyze process. let's do final check to our sorted data (that we named as clean_data).
+
+<center>
+
+![](/Users/960169/Library/CloudStorage/OneDrive-PT.TelekomunikasiIndonesia/DATA SCIENCE/DATA ANALYTIC - GCC X TELKOM/CASE_STUDY/picture/3. clean_data.png){width="700px"}
+
+</center>
+
+as you can see, we got some ambiguous data in trip_duration column cause it's contain trip duration < 0 sec. However, in this case, we would just create a new dataframe that does not contain trip durations of < 0 and stored as data_final.
+
+```{r final check, include=TRUE, results='hide', warning=FALSE}
+# filtering riding_time_second < 0, to avoid bias
+data_final <- filter (clean_data, clean_data$trip_duration > 0)
+```
+
+If you’re using a separate visualization tool such as Tableau or PowerBI, we need to export our dataframe using write.csv:
+
+```
+write.csv(data_final, file ='cyclistic_df.csv')
+```
+
+### 8. Analyze & Visualize
+
+I will be using ggplot in RStudio for this part of the article.Now it’s time to analyze the data and look for key information that we can perform analysis on, and afterward, plot/visualize it!
+
+As mentioned just a moment ago, it is imperative to always remind yourself of the business task at hand during this stage. In order to answer our first business question, it would be beneficial to plot a few of our observations revolving around:
+
+  1. How do casual and members use their bikes differently throughout the week
+  
+  2. Peak hours of bike usage between casual and annual members
+  
+  3. Bike usage throughout the year
+
+  4. The average trip duration between casual and annual members
+  
+  5. Most popular stations among casual and annual members
+  
+first of all, check percentage of total trips and percentage of duration_trip made casual and members riders while using our service in whole of our data. we do this with pie chart :
+
+```{r bar plot, include= TRUE, warning = FALSE}
+library(ggplot2)
+library (scales)
+options(scipen = 999)
+
+# bar plot number of ride by cyclist type
+ggplot(data = data_final, mapping = aes (x = day_of_week, fill = member_casual)) +
+  geom_bar(position = 'dodge') + 
+  scale_fill_manual(values = c("#00AFBB","#AA96DA")) +
+  scale_x_discrete(labels = label_wrap(10)) +
+  scale_y_continuous(labels = comma) +
+  dark_theme_gray() +
+  labs (fill = 'Type of Cyclist', x = 'day of week', y = 'count number of ride', title = 'Number of ride by Cyclist type') +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# bar plot of monthly ride by cyclist type
+ggplot(data = data_final, mapping = aes (x = reorder(month_trip,ride_id), fill = member_casual)) +
+  geom_bar(position = 'dodge') +
+  scale_fill_manual(values = c("#00AFBB","#AA96DA")) +
+  scale_x_discrete(guide = guide_axis(check.overlap = TRUE)) +
+  scale_y_continuous(labels = comma) +
+  dark_theme_gray() +
+  labs (fill = 'Type of Cyclist', x = NULL, y = 'count number of ride', title = 'Monthly number of ride by Cyclist type') +
+  theme(plot.title = element_text(hjust = 0.5), axis.text = element_text(size = 5))
+
+# bar plot of cyclist type hourly ride of day ride
+ggplot(data = data_final, mapping = aes (x = reorder(start_hour, day_of_week), fill = member_casual)) +
+  geom_bar() +
+  scale_fill_manual(values = c("#00AFBB","#AA96DA")) +
+  scale_y_continuous(labels = comma) +
+  facet_wrap(~day_of_week) + 
+  dark_theme_gray() +
+  labs (fill = 'Type of Cyclist', x = 'ride hour', y = 'count number of ride', title = 'Number of ride by ride hour') +
+  theme(plot.title = element_text(hjust = 0.5), axis.text = element_text(size = 5))
+
+# bar plot of daily avg trip duration made by cyclist type 
+bar_plot_avg_time <- data_final %>% group_by(month_trip,day_of_week, member_casual) %>% summarize (avg_trip_duration = mean (as.numeric(trip_duration)))
+
+# 1. daily
+ggplot(bar_plot_avg_time, aes(fill=member_casual, y=avg_trip_duration, x=day_of_week)) + 
+  geom_bar(position="dodge", stat="identity") +
+  scale_fill_manual(values = c("#00AFBB","#AA96DA")) +
+  scale_y_continuous(labels = comma) +
+  dark_theme_gray() +
+  labs (fill = 'type of member', x = NULL, y = 'average trip duration (s)', title = 'Daily Average Trip Duration by Cyclist Type') +
+  theme(plot.title = element_text(hjust = 0.5), axis.text = element_text(size = 10))
+
+# 2. monthly
+ggplot(bar_plot_avg_time, aes(fill=member_casual, y=avg_trip_duration, x=day_of_week)) + 
+  geom_bar(position="dodge", stat="identity") +
+  scale_fill_manual(values = c("#00AFBB","#AA96DA")) +
+  scale_y_continuous(labels = comma) +
+  facet_wrap(~month_trip) +
+  dark_theme_gray() +
+  labs (fill = 'type of member', x = NULL, y = 'average trip duration (s)', title = 'Monthly Average Trip Duration by Cyclist Type') +
+  theme(plot.title = element_text(hjust = 0.5), axis.text = element_text(size = 5)) 
+
+```
+
+
+```{r line plot, include= TRUE, warning = FALSE}
+
+# plot member weekend
+# data
+line_plot_day_weekend <- data_final %>% filter(day_of_week == 'Sat'| day_of_week == 'Sun') %>%
+  group_by(start_hour,member_casual) %>% 
+  summarize (total_riding_time = sum(as.numeric(trip_duration)),
+             total_ride = length(ride_id))
+# chart
+ggplot (data = line_plot_day_weekend ,mapping = aes (x = start_hour, y = total_riding_time/1000, color = member_casual, alpha = total_riding_time/100000)) +
+  geom_line(stat="identity", lineend = "round") +
+  scale_y_continuous(name = 'duration trip (K sec)',label = comma, breaks =seq(0,250000,20000) ) +
+  scale_x_continuous(name = 'Hour' ,breaks=seq(0,23,1)) +
+  theme_bw() +
+  scale_alpha_continuous(breaks = seq(10, 1000, 200),name = "Total Duration in 100K Sec") + # grouping aplha
+  scale_color_manual(values = c("#00AFBB","#AA96DA")) +
+  dark_theme_gray() +
+  labs (color = 'Type of Cyclist', title = 'Hourly Trip Duration on Weekend by Cyclist Type ') +
+  theme(plot.title = element_text(hjust = 0.5), axis.text = element_text(size = 5))
+
+# plot weekday
+# data
+line_plot_day_weekday <- data_final %>% filter(day_of_week != 'Sat'| day_of_week != 'Sun') %>%
+  group_by(start_hour,member_casual) %>% 
+  summarize (total_riding_time = sum(as.numeric(trip_duration)),
+             total_ride = length(ride_id))
+# chart
+ggplot (data = line_plot_day_weekday  ,mapping = aes (x = start_hour, y = total_riding_time/1000, color = member_casual, alpha = total_riding_time/100000)) +
+  geom_line(stat="identity", lineend = "round") +
+  scale_y_continuous(name = 'duration trip (K sec)',label = comma, breaks =seq(0,600000,60000) ) +
+  scale_x_continuous(name = 'Hour' ,breaks=seq(0,23,1)) +
+  theme_bw() +
+  scale_alpha_continuous(breaks = seq(10, 1000, 200), name = "Total Duration in 100K Sec") + # grouping aplha
+  scale_color_manual(values = c("#00AFBB","#AA96DA")) +
+  dark_theme_gray() +
+  labs (color = 'Type of Cyclist', title = 'Hourly Trip Duration on Weekdays by Cyclist Type ') +
+  theme(plot.title = element_text(hjust = 0.5), axis.text = element_text(size = 5))
+
+
+```
+
+
+Based on a brief view of barchart, we can clearly see that :
+
+  1. Casual Cyclists use service double on Weekends than Weekdays
+  
+  2. On Monthly view, more Casual Cyclists come in May - July (until it reaches its peak in July this occurs in the last 2 years 2022 and 2023)
+  
+  3. on weekdays, Member Cyclists usually use the service during the hours of going to office (6 am - 8 am) and returning from work (5  pm - 6 pm) same as pattern as Casual Cyclist, while on weekends, peak time casual cyclists use the service at 11 am - 6 pm
+  
+  4. Casual Cyclist almost spend double the amount of time using the bikes as compared to annual members!
+  
+Based on the weekday & weekend graph, it would further reinforce previous hypothesis whereby annual members are working adults, as we can see from:
+
+  A. Weekend Graph
+  
+  1. Increase in ridership for the casual cyclists starting from 10 am and peaks on 5 pm.
+  
+  B. Weekday Graph  
+  
+  1. 6 am-8 am: A rally in usage, which could indicate when they’ve begun commuting to work
+  
+  2. 12 pm: An increase in usage, which would indicate lunch hour
+  
+  3. 5 pm: A peak in usage, which again falls in line with the office off-hours  
+  
+
+In order to find out the most popular stations, we need to carry out descriptive analysis again. To do this, we need to filter out by Cyclists type and sort in descending order the most frequently started stations.
+
+To do so, I will be using the following code to find out the most popular stations for our members & Casual Cyclists :
+
+
+```{r analyze data, include = TRUE, warning=FALSE}
+
+# Top 15 end station name of Member Cyclist
+data_final %>% filter (member_casual == 'member' & end_station_name != "" ) %>% group_by(end_station_name) %>% summarize(total_ride = length(ride_id), ttl_riding_time = sum(trip_duration)) %>% arrange (desc(total_ride)) %>% head (15)
+
+# Top 15 end station name of Casual Cyclist
+data_final %>% filter (member_casual == 'casual' & end_station_name != "" ) %>% group_by(end_station_name) %>% summarize(total_ride = length(ride_id), ttl_riding_time = sum(trip_duration)) %>% arrange (desc(total_ride)) %>% head (15)
+
+```
+
+As shown in the table above, we see that the stations frequented by member and casual cyclists are very different. The hypothesis that can arise is that member cyclists are spread evenly and densely near offices and work spaces, while casual cyclists are spread out at sightseeing/leisure attractions.
+
+
+Before we end, We would like to confirm the trip counts, and trip durations by each Cyclists type and include any possible outliers as well.
+
+```{r pie chart of percentage total trip by casual member, include=TRUE, warning=FALSE,fig.width=12}
+pie_casual_member <- data_final %>% group_by(member_casual) %>% summarize (total_ride = length(unique(ride_id))) 
+
+pie_casual_member <- pie_casual_member %>% arrange(desc(member_casual)) %>% mutate (prop = total_ride / sum(total_ride) *100) %>% mutate(ypos = cumsum(prop) - 0.5*prop )
+
+ggplot(pie_casual_member, aes(x="", y=prop, fill=member_casual)) +
+  geom_bar(stat="identity", width=8, linewidth = 2, color = "white") +
+  coord_polar("y", start=0) +
+  theme_void() + 
+  geom_text(aes(y = ypos, label =  paste(member_casual, round(prop,2), sep = "\n")), color = "white", size=5, nudge_x = 1) +
+  scale_fill_manual(values = c("#00AFBB","#AA96DA")) +
+  dark_theme_gray() +  
+  theme(legend.position="", 
+        axis.title.x      = element_blank(),
+        axis.title.y      = element_blank(), 
+        panel.border      = element_blank(), 
+        panel.grid        = element_blank(),
+        axis.text         = element_blank(), 
+        axis.ticks        = element_blank(),
+        plot.title        = element_text(size = 10, hjust = 0.5)) +
+  labs (title = 'Percentage Total Trip by Casual and Member')
+```
+
+```{r pie chart of percentage trip duration by casual member, warning=FALSE, include=TRUE, fig.width=12}
+pie_trip_duration <- data_final %>% group_by(member_casual) %>% summarize (total_trip_duration = sum(trip_duration)) 
+
+pie_trip_duration <- pie_trip_duration %>% arrange(desc(member_casual))%>% mutate (prop = as.numeric(total_trip_duration) / as.numeric(sum(total_trip_duration)) *100) %>% mutate(ypos = cumsum(prop) - 0.5*prop )
+
+ggplot(pie_trip_duration, aes(x="", y=prop, fill=member_casual)) +
+  geom_bar(stat="identity", width=12, linewidth = 2, color = "white") +
+  coord_polar("y", start=0) +
+  geom_text(aes(y = ypos, label =  paste(member_casual, round(prop,2), sep = "\n")), color = "white", size=5, nudge_x = 1) +
+  scale_fill_manual(values = c("#00AFBB","#AA96DA")) +
+  dark_theme_gray() +  
+  theme(legend.position="", 
+        axis.title.x      = element_blank(),
+        axis.title.y      = element_blank(), 
+        panel.border      = element_blank(), 
+        panel.grid        = element_blank(),
+        axis.text         = element_blank(), 
+        axis.ticks        = element_blank(), 
+        plot.title        = element_text(size = 10, hjust = 0.5)) +
+  labs (title = 'Percentage Duration Trip by Casual and Member')
+
+```
+
+Here's conclusion of our pie chart, even though members made the most trips than casual cyclists, the total time spent casual cyclist is nearly double that of members.
+
+This would further strengthen the previous hypothesis that casual members are using bikes for sightseeing/leisure purposes.
+
+### 9. Share & Act
+
+Based on our findings after analysis and along to conclude observations, I would like to share my hypothesis on this matter.
+
+```
+  1. I strongly believe that the casual members are mainly composed of tourists and or families who wish to spend their trips and or weekends sightseeing as well as carrying out leisure activities.
+  
+  2. There’s a strong inclination to believe that annual members are mainly composed of working adults which use our services as their means of transportation.
+```
+  
+Now, to answer Moreno’s and her team’s request, the following is recommended to Cyclistic’s marketing strategy team:
+
+```
+  1. We can clearly see a peak in casual riders on a few occasions: On the weekends as well as in the months of May, June, July & August. we should prioritize marketing on the said occasions.
+  
+  2. As a follow up to the previous suggestions, we should advertise promotions on the previous point whereby current casual members would be able to upgrade to annual members at a discount.
+  
+  3. I would suggest strategically enforcing location-based advertisements (featured on Instagram & Facebook) to target the popular stations among the casual members.
+```
+
+Let's move along, into now recommendations that I would suggest to encourage casual members to upgrade to annual ones.
+
+```
+  1. Increase the pricing of single-day & full-day passes. By strategically pricing it higher, it would appeal to upgrade to an annual membership.
+  
+  2. Charge/Impose additional fees for non-annual members based on trip duration. A great start would be to impose an additional 10% of your membership fee every 10 minutes after hitting the daily quota.
+```
+
+Additional remarks:
+
+```
+* Unique user IDs would allow me to count how many times an individual has used the service which would allow for more intricate and strategic promotions
+```
+
+**That concludes this article, thank you for reading my case study till the end, I hope you may have found some insight, Happy a nice day everyone !**
+
+
