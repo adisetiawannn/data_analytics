@@ -96,11 +96,11 @@ marketing program:
 ### 2. Prepare
 
 We will use Cyclistics historical trip
-data from January 2022 untill July 2023 - just click this link to
+data from January 2022 until July 2023 - just click this link to
 download the data :
 [link](https://divvy-tripdata.s3.amazonaws.com/index.html)
 
-once get that data, we wiil stored that data on database, in this case
+once we get that data, we wiil store that data on database, in this case
 we will used Dbeaver as Database. if you have'nt Dbevear, you can
 download through this [link](https://dbeaver.io/download/) and install
 them.
@@ -147,7 +147,7 @@ csv file, more detail explained by picture below :
 
 7.  Open the table (or refresh the window if the table was already open) to see the data.
 
-> do this step until you adding all cyclistic data
+> do this step until you adding all data
 
 when you done import all file, congrats we just have a database & we just finished prepare step :
 
@@ -161,9 +161,7 @@ when you done import all file, congrats we just have a database & we just finish
 
 #### c. Load Data
 
-Data would be processed over 8,825,826 total records, spreadsheets
-wouldn't be able to handle the sheer amount of data. In this case, we
-would be using Rstudio.
+The data to be processed through a total of 8,825,826 records, the spreadsheet will not be able to handle large amounts of data. In this case, we will use Rstudio.
 
 ##### c.1 installing packages & load library :
 
@@ -277,7 +275,7 @@ dbDisconnect(mysqlconn)
 
 ### 3. Data Transformed
 
-we just have a raw data,inspect data type of each column. we can use some functions such as skim_without_chart (skimr), str (base) or glimpse (dplyr). in this case, i preferably using str () function.
+Now, we have raw data,inspect data type of each column. we can use some functions such as skim_without_chart (skimr), str (base) or glimpse (dplyr). in this case, i preferably using str () function.
 
 ```         
 str(raw_data)
@@ -343,7 +341,7 @@ Missing Values / NA data can bias the results of analysis, so keep in eye NA val
 * Impute missing values for categorical variable
 * Prediction of missing values
 
-in this case, we not removing or put some works on rows with missing values.
+in this case, we not removing or putting some works on rows with missing values.
 
 ```{r checking NA Values rows, include=TRUE} 
 
@@ -368,7 +366,7 @@ names(which(colSums(is.na(clean_data)) > 0))
 
 ### 6. Data Manipulation
 
-Now we have clean_data, that contain 13 column, we still need some column to do analyze. the additional column can be obtained by do some works from existing column. in this case we add : 
+Now, we have clean_data, that contain 13 column, we still need some column to do analyze. the additional column can be obtained by do some works from existing column. in this case we add : 
 
 * trip_duration : using difftime
 * day_of_week : using wday()
@@ -404,7 +402,7 @@ Before we do some analyze process. let's do final check to our sorted data (that
 
 </center>
 
-as you can see, we got some ambiguous data in trip_duration column cause it's contain trip duration < 0 sec. However, in this case, we would just create a new dataframe that does not contain trip durations of < 0 and stored as data_final.
+we got some ambiguous data in trip_duration column due to it's contain trip duration < 0 sec. However, in this case, we would just create a new dataframe that does not contain trip durations of < 0 and stored as data_final.
 
 ```{r final check, include=TRUE, results='hide', warning=FALSE}
 # filtering riding_time_second < 0, to avoid bias
@@ -419,7 +417,7 @@ write.csv(data_final, file ='cyclistic_df.csv')
 
 ### 8. Analyze & Visualize
 
-I will be using ggplot in RStudio for this part of the article.Now it’s time to analyze the data and look for key information that we can perform analysis on, and afterward, plot/visualize it!
+(I will be using ggplot in RStudio for this part of the article) Now it’s time to analyze the data and look for key information afterward, plot/visualize it
 
 As mentioned just a moment ago, it is imperative to always remind yourself of the business task at hand during this stage. In order to answer our first business question, it would be beneficial to plot a few of our observations revolving around:
 
