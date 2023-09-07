@@ -31,16 +31,9 @@ knitr::knit_hooks$set(crop = knitr::hook_pdfcrop)
 
 ## Introduction
 
-Hello i'm Adi, i've been enrolled on Google Data Analytics Course, for completing my
-course i should working on a case study.
-
 Through this article, i will share step by step how to provide some
 insight to answer business problem through data decision making (known
-as business analyst approched)
-
-Before we start, i should tell you this time may be come toughtfull &
-stressfull time but it was perfect way to learn and develop our skills
-as much. Thanks Joe Yong for inspiration and insight through his article that posted at medium.
+as business analyst approched) Thanks Joe Yong for inspiration and insight through his article that posted at medium.
 
 ## Scenario
 
@@ -163,7 +156,7 @@ when you done import all file, congrats we just have a database & we just finish
 
 The data to be processed through a total of 8,825,826 records, the spreadsheet will not be able to handle large amounts of data. In this case, we will use Rstudio.
 
-##### c.1 installing packages & load library :
+#### c.1 installing packages & load library :
 
 ```         
 *install packages
@@ -217,9 +210,9 @@ library (scales)
 library(ggdark)
 ```
 
-##### c.2 Load data from database, using this syntax :
+#### c.2 Load data from database, using this syntax :
 
-###### c.2.1 Make a connection to DBMS
+#### c.2.1 Make a connection to DBMS
 
 ```         
 mysqlconn <- dbConnect(MySQL(), 
@@ -229,7 +222,7 @@ mysqlconn <- dbConnect(MySQL(),
 
 *( we use DBI Library from DBI packages)*
 
-###### c.2.2 Load table as raw data
+#### c.2.2 Load table as raw data
 
 ```         
 raw_data <- dbReadTable(mysqlconn, "cyclistic")
@@ -430,8 +423,6 @@ As mentioned just a moment ago, it is imperative to always remind yourself of th
   4. The average trip duration between casual and annual members
   
   5. Most popular stations among casual and annual members
-  
-first of all, check percentage of total trips and percentage of duration_trip made casual and members riders while using our service in whole of our data. we do this with pie chart :
 
 ```{r bar plot, include= TRUE, warning = FALSE}
 library(ggplot2)
